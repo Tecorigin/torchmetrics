@@ -44,7 +44,12 @@ def _log_cosh_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> t
 
     preds, target = _unsqueeze_tensors(preds, target)
     diff = preds - target
-    sum_log_cosh_error = torch.log((torch.exp(diff) + torch.exp(-diff)) / 2).sum(0).squeeze()
+    device = diff.device
+    # SDAA exp e-6 diff
+    if 'sdaa' in device.type:
+        sum_log_cosh_error = torch.log((torch.exp(diff.cpu()).to(device) + torch.exp(-diff.cpu()).to(device)) / 2).sum(0).squeeze()
+    else:
+        sum_log_cosh_error = torch.log((torch.exp(diff) + torch.exp(-diff)) / 2).sum(0).squeeze()
     num_obs = torch.tensor(target.shape[0], device=preds.device)
     return sum_log_cosh_error, num_obs
 

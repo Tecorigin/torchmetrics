@@ -124,13 +124,24 @@ def _uniform_filter(inputs: Tensor, window_size: int) -> Tensor:
     inputs = _reflection_pad_2d(inputs, window_size // 2, window_size % 2)
     kernel_weight, kernel_bias = _uniform_weight_bias_conv2d(inputs, window_size)
     # Iterate over channels
-    return torch.cat(
-        [
-            F.conv2d(inputs[:, channel].unsqueeze(1), kernel_weight, kernel_bias, padding=0)
-            for channel in range(inputs.shape[1])
-        ],
-        dim=1,
-    )
+    # SDAA conv2d prec
+    device = inputs.device
+    if 'sdaa' in device.type:
+        return torch.cat(
+            [
+                F.conv2d(inputs[:, channel].unsqueeze(1).cpu(), kernel_weight.cpu(), kernel_bias.cpu(), padding=0).to(device)
+                for channel in range(inputs.shape[1])
+            ],
+            dim=1,
+        )
+    else:
+        return torch.cat(
+            [
+                F.conv2d(inputs[:, channel].unsqueeze(1), kernel_weight, kernel_bias, padding=0)
+                for channel in range(inputs.shape[1])
+            ],
+            dim=1,
+        )
 
 
 def _gaussian_kernel_3d(

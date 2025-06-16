@@ -91,11 +91,20 @@ def _uqi_compute(
     pad_h = (kernel_size[0] - 1) // 2
     pad_w = (kernel_size[1] - 1) // 2
 
-    preds = nn.functional.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
-    target = nn.functional.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
+    # SDAA not support reflect pad for fp16
+    if 'sdaa' in device.type:
+        preds = nn.functional.pad(preds.cpu().float(), (pad_h, pad_h, pad_w, pad_w), mode="reflect").to(device, dtype)
+        target = nn.functional.pad(target.cpu().float(), (pad_h, pad_h, pad_w, pad_w), mode="reflect").to(device, dtype)
+    else:
+        preds = nn.functional.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
+        target = nn.functional.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
-    outputs = nn.functional.conv2d(input_list, kernel, groups=channel)
+    # SDAA conv2d prec
+    if 'sdaa' in device.type:
+        outputs = nn.functional.conv2d(input_list.cpu(), kernel.cpu(), groups=channel).to(device)
+    else:
+        outputs = nn.functional.conv2d(input_list, kernel, groups=channel)
     output_list = outputs.split(preds.shape[0])
 
     mu_pred_sq = output_list[0].pow(2)

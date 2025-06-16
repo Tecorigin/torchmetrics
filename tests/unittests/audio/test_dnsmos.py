@@ -184,15 +184,16 @@ class _DNSMOSCheat(DeepNoiseSuppressionMeanOpinionScore):
 preds = torch.rand(2, 2, 8000)
 
 
-@pytest.mark.parametrize(
-    ("preds", "fs", "personalized"),
-    [
-        (preds, 8000, False),
-        (preds, 8000, True),
-        (preds, 16000, False),
-        (preds, 16000, True),
-    ],
-)
+# @pytest.mark.parametrize(
+#     ("preds", "fs", "personalized"),
+#     [
+#         (preds, 8000, False),
+#         (preds, 8000, True),
+#         (preds, 16000, False),
+#         (preds, 16000, True),
+#     ],
+# )
+@pytest.mark.skip(reason="for download files")
 class TestDNSMOS(MetricTester):
     """Test class for `DeepNoiseSuppressionMeanOpinionScore` metric."""
 

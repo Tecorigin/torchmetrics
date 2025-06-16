@@ -66,6 +66,10 @@ def _word_info_lost_compute(errors: Tensor, target_total: Tensor, preds_total: T
         Word Information Lost score
 
     """
+    # SDAA prec e-7
+    device = errors.device
+    if 'sdaa' in device.type:
+        return 1 - ((errors.cpu() / target_total.cpu()).to(device) * (errors.cpu() / preds_total.cpu())).to(device)
     return 1 - ((errors / target_total) * (errors / preds_total))
 
 

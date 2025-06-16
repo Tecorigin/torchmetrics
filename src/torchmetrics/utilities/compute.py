@@ -68,6 +68,11 @@ def _safe_divide(
         tensor([0.0000, 2.0000, 1.5000])
 
     """
+    device = num.device
+    # SDAA prec bug, diff about e-7
+    if 'sdaa' in device.type:
+        num = num.cpu()
+        denom = denom.cpu()
     num = num if num.is_floating_point() else num.float()
     denom = denom if denom.is_floating_point() else denom.float()
     if isinstance(zero_division, (float, int)) or zero_division == "warn":
@@ -75,7 +80,11 @@ def _safe_divide(
             rank_zero_warn("Detected zero division in _safe_divide. Setting 0/0 to 0.0")
         zero_division = 0.0 if zero_division == "warn" else zero_division
         zero_division_tensor = torch.tensor(zero_division, dtype=num.dtype).to(num.device, non_blocking=True)
+        if 'sdaa' in device.type:
+            return torch.where(denom != 0, num / denom, zero_division_tensor).to(device)
         return torch.where(denom != 0, num / denom, zero_division_tensor)
+    if 'sdaa' in device.type:
+        return torch.true_divide(num, denom).to(device)
     return torch.true_divide(num, denom)
 
 

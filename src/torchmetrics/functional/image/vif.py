@@ -46,19 +46,33 @@ def _vif_per_channel(preds: Tensor, target: Tensor, sigma_n_sq: float) -> Tensor
         n = 2.0 ** (4 - scale) + 1
         kernel = _filter(n, n / 5, dtype=dtype, device=device)[None, None, :]
 
+        # conv2d e-7 diff
         if scale > 0:
-            target = conv2d(target, kernel)[:, :, ::2, ::2]
-            preds = conv2d(preds, kernel)[:, :, ::2, ::2]
+            if 'sdaa' in device.type:
+                target = conv2d(target.cpu(), kernel.cpu())[:, :, ::2, ::2].to(device)
+                preds = conv2d(preds.cpu(), kernel.cpu())[:, :, ::2, ::2].to(device)
+            else:
+                target = conv2d(target, kernel)[:, :, ::2, ::2]
+                preds = conv2d(preds, kernel)[:, :, ::2, ::2]
 
-        mu_target = conv2d(target, kernel)
-        mu_preds = conv2d(preds, kernel)
+        if 'sdaa' in device.type:
+            mu_target = conv2d(target.cpu(), kernel.cpu()).to(device)
+            mu_preds = conv2d(preds.cpu(), kernel.cpu()).to(device)
+        else:
+            mu_target = conv2d(target, kernel)
+            mu_preds = conv2d(preds, kernel)
         mu_target_sq = mu_target**2
         mu_preds_sq = mu_preds**2
         mu_target_preds = mu_target * mu_preds
 
-        sigma_target_sq = torch.clamp(conv2d(target**2, kernel) - mu_target_sq, min=0.0)
-        sigma_preds_sq = torch.clamp(conv2d(preds**2, kernel) - mu_preds_sq, min=0.0)
-        sigma_target_preds = conv2d(target * preds, kernel) - mu_target_preds
+        if 'sdaa' in device.type:
+            sigma_target_sq = torch.clamp(conv2d(target.cpu()**2, kernel.cpu()).to(device) - mu_target_sq, min=0.0)
+            sigma_preds_sq = torch.clamp(conv2d(preds.cpu()**2, kernel.cpu()).to(device) - mu_preds_sq, min=0.0)
+            sigma_target_preds = conv2d(target.cpu() * preds.cpu(), kernel.cpu()).to(device) - mu_target_preds
+        else:
+            sigma_target_sq = torch.clamp(conv2d(target**2, kernel) - mu_target_sq, min=0.0)
+            sigma_preds_sq = torch.clamp(conv2d(preds**2, kernel) - mu_preds_sq, min=0.0)
+            sigma_target_preds = conv2d(target * preds, kernel) - mu_target_preds
 
         g = sigma_target_preds / (sigma_target_sq + eps)
         sigma_v_sq = sigma_preds_sq - g * sigma_target_preds

@@ -65,7 +65,12 @@ def _binary_roc_compute(
             )
             fpr = torch.zeros_like(thres)
         else:
-            fpr = fps / fps[-1]
+            # SDAA prec bug, diff about e-7
+            if 'sdaa' in tps.device.type:
+                device = fps.device
+                fpr = (fps.cpu() / fps.cpu()[-1]).to(device)
+            else:
+                fpr = fps / fps[-1]
 
         if tps[-1] <= 0:
             rank_zero_warn(
@@ -75,7 +80,12 @@ def _binary_roc_compute(
             )
             tpr = torch.zeros_like(thres)
         else:
-            tpr = tps / tps[-1]
+            # SDAA prec bug, diff about e-7
+            if 'sdaa' in tps.device.type:
+                device = tps.device
+                tpr = (tps.cpu() / tps[-1].cpu()).to(device)
+            else:
+                tpr = tps / tps[-1]
 
     return fpr, tpr, thres
 

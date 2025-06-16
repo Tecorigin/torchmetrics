@@ -98,6 +98,10 @@ def _signal_convolve_2d(input_img: Tensor, kernel: Tensor) -> Tensor:
 
     padded = _symmetric_reflect_pad_2d(input_img, pad=(left_padding, right_padding, top_padding, bottom_padding))
     kernel = kernel.flip([2, 3])
+    # SDAA conv2d e-2 diff
+    device = padded.device
+    if 'sdaa' in device.type:
+        return conv2d(padded.cpu(), kernel.cpu(), stride=1, padding=0).to(device)
     return conv2d(padded, kernel, stride=1, padding=0)
 
 
@@ -117,12 +121,22 @@ def _local_variance_covariance(preds: Tensor, target: Tensor, window: Tensor) ->
     preds = pad(preds, (left_padding, right_padding, left_padding, right_padding))
     target = pad(target, (left_padding, right_padding, left_padding, right_padding))
 
-    preds_mean = conv2d(preds, window, stride=1, padding=0)
-    target_mean = conv2d(target, window, stride=1, padding=0)
+    # SDAA conv2d e-2 diff
+    device = preds.device
+    if 'sdaa' in device.type:
+        preds_mean = conv2d(preds.cpu(), window.cpu(), stride=1, padding=0).to(device)
+        target_mean = conv2d(target.cpu(), window.cpu(), stride=1, padding=0).to(device)
 
-    preds_var = conv2d(preds**2, window, stride=1, padding=0) - preds_mean**2
-    target_var = conv2d(target**2, window, stride=1, padding=0) - target_mean**2
-    target_preds_cov = conv2d(target * preds, window, stride=1, padding=0) - target_mean * preds_mean
+        preds_var = conv2d(preds.cpu()**2, window.cpu(), stride=1, padding=0).to(device) - preds_mean**2
+        target_var = conv2d(target.cpu()**2, window.cpu(), stride=1, padding=0).to(device) - target_mean**2
+        target_preds_cov = conv2d(target.cpu() * preds.cpu(), window.cpu(), stride=1, padding=0).to(device) - target_mean * preds_mean
+    else:
+        preds_mean = conv2d(preds, window, stride=1, padding=0)
+        target_mean = conv2d(target, window, stride=1, padding=0)
+
+        preds_var = conv2d(preds**2, window, stride=1, padding=0) - preds_mean**2
+        target_var = conv2d(target**2, window, stride=1, padding=0) - target_mean**2
+        target_preds_cov = conv2d(target * preds, window, stride=1, padding=0) - target_mean * preds_mean
 
     return preds_var, target_var, target_preds_cov
 

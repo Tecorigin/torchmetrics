@@ -41,7 +41,7 @@ from unittests._helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDi
 
 seed_all(42)
 
-
+@pytest.mark.skip(reason="SDAA not support jit")
 def test_metric_collection_jit_script():
     """Test that the MetricCollection can be scripted and jitted."""
     m1 = DummyMetricSum()

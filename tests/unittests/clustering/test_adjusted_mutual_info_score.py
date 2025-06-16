@@ -29,17 +29,19 @@ seed_all(42)
 ATOL = 1e-5
 
 
-@pytest.mark.parametrize(
-    ("preds", "target"),
-    [
-        (_single_target_extrinsic1.preds, _single_target_extrinsic1.target),
-        (_single_target_extrinsic2.preds, _single_target_extrinsic2.target),
-    ],
-)
-@pytest.mark.parametrize(
-    "average_method",
-    ["min", "arithmetic", "geometric", "max"],
-)
+# @pytest.mark.parametrize(
+#     ("preds", "target"),
+#     [
+#         (_single_target_extrinsic1.preds, _single_target_extrinsic1.target),
+#         (_single_target_extrinsic2.preds, _single_target_extrinsic2.target),
+#     ],
+# )
+# @pytest.mark.parametrize(
+#     "average_method",
+#     ["min", "arithmetic", "geometric", "max"],
+# )
+
+@pytest.mark.skip(reason="SDAA not support sparse_coo_tensor")
 class TestAdjustedMutualInfoScore(MetricTester):
     """Test class for `AdjustedMutualInfoScore` metric."""
 

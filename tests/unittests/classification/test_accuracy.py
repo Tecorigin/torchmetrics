@@ -336,19 +336,20 @@ class TestMulticlassAccuracy(MetricTester):
             dtype=dtype,
         )
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    @pytest.mark.parametrize(
-        ("average", "use_deterministic_algorithms"),
-        [
-            (None, True),  # Defaults to "macro", but explicitly included for testing omission
-            # average=`macro` stays on GPU when `use_deterministic` is True. Otherwise syncs in `bincount`
-            ("macro", True),
-            ("micro", False),
-            ("micro", True),
-            ("weighted", True),
-        ],
-    )
+    # @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    # @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    # @pytest.mark.parametrize(
+    #     ("average", "use_deterministic_algorithms"),
+    #     [
+    #         (None, True),  # Defaults to "macro", but explicitly included for testing omission
+    #         # average=`macro` stays on GPU when `use_deterministic` is True. Otherwise syncs in `bincount`
+    #         ("macro", True),
+    #         ("micro", False),
+    #         ("micro", True),
+    #         ("weighted", True),
+    #     ],
+    # )
+    @pytest.mark.skip(reason="SDAA not support sync_debug_mode")
     def test_multiclass_accuracy_gpu_sync_points(
         self, inputs, dtype: torch.dtype, average: str, use_deterministic_algorithms: bool
     ):
@@ -381,17 +382,18 @@ class TestMulticlassAccuracy(MetricTester):
             dtype=dtype,
         )
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    @pytest.mark.parametrize(
-        ("average", "use_deterministic_algorithms"),
-        [
-            # If you remove from this collection, please add items to `test_multiclass_accuracy_gpu_sync_points`
-            (None, False),
-            ("macro", False),
-            ("weighted", False),
-        ],
-    )
+    # @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    # @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    # @pytest.mark.parametrize(
+    #     ("average", "use_deterministic_algorithms"),
+    #     [
+    #         # If you remove from this collection, please add items to `test_multiclass_accuracy_gpu_sync_points`
+    #         (None, False),
+    #         ("macro", False),
+    #         ("weighted", False),
+    #     ],
+    # )
+    @pytest.mark.skip(reason="SDAA not support sync_debug_mode")
     def test_multiclass_accuracy_gpu_sync_points_uptodate(
         self, inputs, dtype: torch.dtype, average: str, use_deterministic_algorithms: bool
     ):

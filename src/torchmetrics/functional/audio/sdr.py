@@ -80,7 +80,12 @@ def _compute_autocorr_crosscorr(target: Tensor, preds: Tensor, corr_len: int) ->
 
     # computes the cross-correlation of `target` and `preds`
     p_fft = torch.fft.rfft(preds, n=n_fft, dim=-1)
-    b = torch.fft.irfft(t_fft.conj() * p_fft, n=n_fft, dim=-1)[..., :corr_len]
+    # SDAA conj prec issue
+    device = t_fft.device
+    if 'sdaa' in device.type:
+        b = torch.fft.irfft(t_fft.cpu().conj().to(device) * p_fft, n=n_fft, dim=-1)[..., :corr_len]
+    else:
+        b = torch.fft.irfft(t_fft.conj() * p_fft, n=n_fft, dim=-1)[..., :corr_len]
 
     return r_0, b
 

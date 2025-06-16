@@ -291,9 +291,15 @@ def speech_reverberation_modulation_energy_ratio(
 
     num_frames = int(1 + (time - w_length) // w_inc)
     w = torch.hamming_window(w_length + 1, dtype=torch.float64, device=preds.device)[:-1]
-    mod_out = lfilter(
-        gt_env.unsqueeze(-2).expand(-1, -1, mf.shape[0], -1), mf[:, 1, :], mf[:, 0, :], clamp=False, batching=True
-    )  # [B, N_filters, 8, time]
+    device = preds.device
+    if 'sdaa' in device.type:
+        mod_out = lfilter(
+            gt_env.unsqueeze(-2).expand(-1, -1, mf.shape[0], -1).cpu(), mf[:, 1, :].cpu(), mf[:, 0, :].cpu(), clamp=False, batching=True
+        ).to(device)  # [B, N_filters, 8, time]
+    else:
+        mod_out = lfilter(
+            gt_env.unsqueeze(-2).expand(-1, -1, mf.shape[0], -1), mf[:, 1, :], mf[:, 0, :], clamp=False, batching=True
+        )  # [B, N_filters, 8, time]
     # pad signal if it's shorter than window or it is not multiple of wInc
     padding = (0, max(ceil(time / w_inc) * w_inc - time, w_length - time))
     mod_out_pad = pad(mod_out, pad=padding, mode="constant", value=0)

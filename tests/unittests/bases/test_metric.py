@@ -312,7 +312,7 @@ def test_device_and_dtype_transfer(tmpdir):
 
     metric = metric.to(device="cuda")
     assert metric.x.is_cuda
-    assert metric.device == torch.device("cuda", index=0)
+    assert metric.device == torch.device("cuda", index=0) or metric.device == torch.device("sdaa", index=0)
 
     metric.set_dtype(torch.double)
     assert metric.x.dtype == torch.float64

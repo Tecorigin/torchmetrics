@@ -139,8 +139,13 @@ def _ssim_update(
         if gaussian_kernel:
             kernel = _gaussian_kernel_3d(channel, gauss_kernel_size, sigma, dtype, device)
     else:
-        preds = F.pad(preds, (pad_w, pad_w, pad_h, pad_h), mode="reflect")
-        target = F.pad(target, (pad_w, pad_w, pad_h, pad_h), mode="reflect")
+        # SDAA not support reflect pad for fp16
+        if 'sdaa' in device.type:
+            preds = F.pad(preds.float(), (pad_w, pad_w, pad_h, pad_h), mode="reflect").to(dtype)
+            target = F.pad(target.float(), (pad_w, pad_w, pad_h, pad_h), mode="reflect").to(dtype)
+        else:
+            preds = F.pad(preds, (pad_w, pad_w, pad_h, pad_h), mode="reflect")
+            target = F.pad(target, (pad_w, pad_w, pad_h, pad_h), mode="reflect")
         if gaussian_kernel:
             kernel = _gaussian_kernel_2d(channel, gauss_kernel_size, sigma, dtype, device)
 

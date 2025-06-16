@@ -62,7 +62,7 @@ class TestComplexSISNR(MetricTester):
         """Test dtype support of the metric on GPU."""
         pytest.xfail("C-SI-SDR metric does not support gpu + half precision")
 
-
+@pytest.mark.skip(reason='no wav file')
 def test_on_real_audio():
     """Test that metric works as expected on real audio signals."""
     rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)

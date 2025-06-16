@@ -143,7 +143,11 @@ def _bleu_score_compute(
 
     log_precision_scores = tensor(weights, device=device) * torch.log(precision_scores)
     geometric_mean = torch.exp(torch.sum(log_precision_scores))
-    brevity_penalty = tensor(1.0, device=device) if preds_len > target_len else torch.exp(1 - (target_len / preds_len))
+    device = target_len.device
+    if 'sdaa' in device.type:
+        brevity_penalty = tensor(1.0, device=device) if preds_len > target_len else torch.exp(1 - (target_len.cpu() / preds_len.cpu()).to(device))
+    else:
+        brevity_penalty = tensor(1.0, device=device) if preds_len > target_len else torch.exp(1 - (target_len / preds_len))
     return brevity_penalty * geometric_mean
 
 

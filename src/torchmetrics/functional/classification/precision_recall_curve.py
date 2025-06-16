@@ -273,8 +273,14 @@ def _binary_precision_recall_curve_compute(
         return precision, recall, thresholds
 
     fps, tps, thresholds = _binary_clf_curve(state[0], state[1], pos_label=pos_label)
-    precision = tps / (tps + fps)
-    recall = tps / tps[-1]
+    # SDAA prec bug, diff less e-7
+    device = tps.device
+    if 'sdaa' in device.type:
+        precision = (tps.cpu() / (tps + fps).cpu()).to(device)
+        recall = (tps.cpu() / tps[-1].cpu()).to(device)
+    else:
+        precision = tps / (tps + fps)
+        recall = tps / tps[-1]
     if (state[1] == 0).all():  # all labels are negative, recall is undefined
         rank_zero_warn(
             "No positive samples found in target, recall is undefined. Setting recall to one for all thresholds.",

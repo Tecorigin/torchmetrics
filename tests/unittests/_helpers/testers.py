@@ -302,6 +302,7 @@ def _functional_test(
 
     for i in range(num_batches // 2):
         extra_kwargs = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
+        # breakpoint()
         tm_result = metric(preds[i], target[i], **extra_kwargs)
         extra_kwargs = {
             k: v.cpu() if isinstance(v, Tensor) else v
