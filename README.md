@@ -43,44 +43,16 @@ ______________________________________________________________________
 Simple installation from PyPI
 
 ```bash
-pip install torchmetrics
+pip install torchmetrics-1.8.0.dev0-py3-none-any.whl
 ```
 
 <details>
   <summary>Other installations</summary>
 
-Install using conda
-
-```bash
-conda install -c conda-forge torchmetrics
-```
-
 Pip from source
 
 ```bash
-# with git
-pip install git+https://github.com/Lightning-AI/torchmetrics.git@release/stable
-```
-
-Pip from archive
-
-```bash
-pip install https://github.com/Lightning-AI/torchmetrics/archive/refs/heads/release/stable.zip
-```
-
-Extra dependencies for specialized metrics:
-
-```bash
-pip install torchmetrics[audio]
-pip install torchmetrics[image]
-pip install torchmetrics[text]
-pip install torchmetrics[all]  # install all of the above
-```
-
-Install latest developer version
-
-```bash
-pip install https://github.com/Lightning-AI/torchmetrics/archive/master.zip
+pip install -e .
 ```
 
 </details>
@@ -103,6 +75,8 @@ You can use TorchMetrics with any PyTorch model or with [PyTorch Lightning](http
 - Native support for logging metrics in Lightning to reduce even more boilerplate.
 
 ## Using TorchMetrics
+
+To use on SDAA platform: export TORCH_SDAA_AUTOLOAD=cuda_migrate
 
 ### Module metrics
 
